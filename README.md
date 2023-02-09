@@ -1,7 +1,19 @@
-# Roland-s-Downloader
-EARLY DRAFT - Hei Hei edvard
+# Roland's Downloader
+This is a personal project made and designed to simplify the process of downloading vidoes 
+from various websites usin pytube and youtube-dl. 
 
-When downloaded, a folder named "Download" must be made in the path of the main.py for two of the download fetures to have a destination for downloaded files.
 
-- Enter URL: "Enter a valid youtube url or a valid youtube-dl URL"
-- Enter Format: Currently the two valid ones are mp4 and mp3, but you wont actually get an mp3, and mp3 outside of yt is not ready
+##Functions
+Download youtube videos in the following formats with Pytube:
+- MP4
+- Mp3
+
+
+##Bugs
+- Encountring an error that crashes the script on my desktop at the moment of creating the path for downloaded 
+  video, due to WinError 5 and 13, can be fixed if you run the script with the following on win10 Home 64-bit,
+  "python -i PATH\main.py",seems to be a local problem, based on the fact it runs perfectly on my laptop
+  which is running Win11 Home 64-bit. Has to be tested on other devices.
+
+
+
