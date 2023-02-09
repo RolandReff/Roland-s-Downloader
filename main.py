@@ -27,8 +27,7 @@ def YoutubeDownloader(URL, Mode):
             yt = pytube.YouTube(Link)
             out_file= yt.streams.filter(only_audio=True).first().download(directory_path+'\\Download')
             videoTitle = yt.title
-            #os.rename((download_path+'\\' +yt.title+'.mp4'),(yt.title+'.mp3')) #Error on renaming to change file.
-            print(videoTitle +" has been downloaded")
+            os.rename((download_path+'\\' +yt.title+'.mp4'),(download_path+'\\' +yt.title+'.mp3')) #Seems to work for now, some videos with " in their titles get it removed in the file name when downloaded,
     elif "www.youtube.com" not in Link:    
         if Mode == "mp4" or Mode == "MP4" or Mode == "Mp4" or Mode == str(1): 
             ydl_opts = {format: 'bestvideo+bestaudi','outtmpl': download_path+'\\'+'%(title)s.%(ext)s'} #Format is quality of download, outtmpl is where downloaded video end up
