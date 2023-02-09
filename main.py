@@ -7,6 +7,7 @@ import youtube_dl
 #Add WAV, M4A true format downloads
 #Yet to add a check to see if the url and formats are valid, nest that within the mp4 format so auto picks if it uses other or mp4 download method 
 #Seem to lack the premissions to write to the download folder outside of VSCODE, error code 5 and 13
+#Turns oout the premission problem is a local one, why does god hate me
 #Works almost perfect in VSCODE, fucking useless outside due to lack of premissions
 def YoutubeDownloader(URL, Mode):
     Link = URL
