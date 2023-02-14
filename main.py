@@ -113,4 +113,4 @@ def OtherDownloader(URL, Mode):
 if __name__ == "__main__":
     #help(youtube_dl)
     #print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    DeploymentMenu()
+    Menu()
