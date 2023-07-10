@@ -1,7 +1,11 @@
 import os
 import pytube
 import youtube_dl
-import datetime #For later use 
+import yt_dlp
+
+
+#TLDR, Google enginers are at warfare with the devs, use this ciper for the pytube downnload function to work with 15.0.0
+# https://github.com/oncename/pytube/blob/master/pytube/cipher.py
 
 #Add playlist download compatebility
 #Add WAV, M4A true format downloads
@@ -53,9 +57,11 @@ def Menu(): #VERY ROUGH DRAFT, ONLY USED FOR TESTING CURRENTLY
     APPSTATE = True #Need to make something that closes the program from inputs...
     while APPSTATE == True: 
         print('URL example: https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+        #URL = "https://www.youtube.com/watch?v=Z0oU5k2ECIQ1"
         URL = input("Enter URL: ")
         print('Options:\n1-MP4\n2-MP3')
         Mode = input("Enter format:")
+        #Mode = "1"
         DownloaderChoice(URL, Mode)
 
 def DebugMenu(): #Reserved funtion for later implementation when program is ready for deployment for other users.
@@ -64,24 +70,25 @@ def DebugMenu(): #Reserved funtion for later implementation when program is read
 def DownloaderChoice(URL, Mode):
     if "www.youtube.com" in URL:
         YoutubeDownloader(URL, Mode)
-    else:
-        OtherDownloader(URL, Mode)
+    #else:
+    #    OtherDownloader(URL, Mode)
 
 def YoutubeDownloader(URL, Mode):
-    Link = URL
+    
     Mode  = str(Mode)
     directory_path = os.getcwd()
     download_path = directory_path+'\\Download'
-    yt = pytube.YouTube(Link)
+    yt = pytube.YouTube(URL)
     
     if Mode == "mp4" or Mode == "MP4" or Mode == "Mp4" or Mode == str(1):
-        yt = pytube.YouTube(Link)
-        yt.streams.get_highest_resolution().download(download_path) 
+        yt = pytube.YouTube(URL)
+        stream =yt.streams.get_highest_resolution() #Gives only 1080P on certion videos, needs to be fixed.
+        finished = stream.download(download_path)
         videoTitle = yt.title
         print(videoTitle +" has been downloaded")
 
     elif Mode == "mp3" or Mode == "MP3" or Mode == "Mp3" or Mode == str(2): #Downloads only audio as a MP4 file, need conversion to MP3
-        yt = pytube.YouTube(Link)
+        yt = pytube.YouTube(URL)
         out_file= yt.streams.filter(only_audio=True).first().download(directory_path+'\\Download')
         NewTitle = out_file.replace('.mp4','')
         os.rename((out_file),(NewTitle+'.mp3'))
@@ -90,7 +97,6 @@ def YoutubeDownloader(URL, Mode):
         print("There has been a problem")
 
 def OtherDownloader(URL, Mode):
-    Link = URL
     Mode  = str(Mode)
     directory_path = os.getcwd()
     download_path = directory_path+'\\Download'
@@ -99,18 +105,17 @@ def OtherDownloader(URL, Mode):
     if Mode == "mp4" or Mode == "MP4" or Mode == "Mp4" or Mode == str(1): 
         ydl_opts = {format: 'bestvideo+bestaudi','outtmpl': download_path+'\\'+'%(title)s.%(ext)s'} #Format is quality of download, outtmpl is where downloaded video end up
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            ydl.extract_info(Link,download=True)
+            ydl.extract_info(URL,download=True)
 
     elif Mode == "mp3" or Mode == "MP3" or Mode == "Mp3" or Mode == str(2): #MP3 placeholder, needs actual code tho
     
          #ydl_opts = {'format': 'bestaudio/best','outtmpl': download_path+'\\'+'%(title)s.%(ext)s', 'ffmpeg-location': str(directory_path+'\\venv\\Scripts\\ffmpeg'),'ffprobe-loocation':str(directory_path+'\\venv\\Scripts\\ffprobe') ,'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'wav'}],} #WAV template for later use
         ydl_opts = {'format': 'bestaudio/best','outtmpl': download_path+'\\'+'%(title)s.%(ext)s', 'ffmpeg-location': str(directory_path+'\\venv\\Scripts\\ffmpeg'),'ffprobe-loocation':str(directory_path+'\\venv\\Scripts\\ffprobe') ,'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3', 'preferredquality': '192',}],} #Format is quality of download, outtmpl is where downloaded video end up
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            ydl.extract_info(Link,download=True)
+            ydl.extract_info(URL,download=True)
     else:
         print("There has been a problem")
 
 if __name__ == "__main__":
-    #help(youtube_dl)
-    #print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+ 
     Menu()
