@@ -45,11 +45,14 @@ def find(name, path): #used for finding the path of ffmpeg and ffprobe.
             return os.path.join(root, name)
 
 def is_supported(URL): #https://stackoverflow.com/a/61489622
-    extractors = youtube_dl.extractor.gen_extractors()
-    for e in extractors:
-        if e.suitable(URL) and e.IE_NAME != 'generic':
-            return True
-    return False
+    try:
+        extractors = youtube_dl.extractor.gen_extractors()
+        for e in extractors:
+            if e.suitable(URL) and e.IE_NAME != 'generic':
+                return True
+        return False
+    except:
+        return False
 
 def Menu(): 
     global config #Is needed for pretty much every function
@@ -59,40 +62,15 @@ def Menu():
     while APPSTATE == True: 
         print('URL example: https://www.youtube.com/watch?v=dQw4w9WgXcQ')
         URL = input("Enter URL: ")
-        print('Options:\n1-MP4\n2-MP3\n3-WAV')
+        print('Options:\n1-MP4\n2-MP3') #\n3-WAV not added yet to both downloaders
         Mode = input("Enter format:")
         DownloaderChoice(URL, Mode)
 
-def DebugMenu(): #Reserved funtion for later implementation when program is ready for deployment for other users.
-    boot()
-    global config #Is needed for pretty much every function
-    config = boot()
+def TestMenu(): #Reserved funtion for testing
     print("Hei Verden")
-    yt = pytube.YouTube("https://www.youtube.com/watch?v=6YZlFdTIdzM")
-    stream = yt.streams.get_by_itag(ItagChecker(yt,False))
-    stream.download(output_path=config["download__folder_path"], filename="input-a.mp4")
-    stream = yt.streams.get_by_itag(ItagChecker(yt,True))
-    stream.download(output_path=config["download__folder_path"], filename="input-b.mp4")
-    ffmpeg = (FFmpeg(executable=config["ffmpeg_path"])
-        .option("y")
-        .input(os.path.join(config["download__folder_path"],"input-a.mp4"))
-        .input(os.path.join(config["download__folder_path"],"input-b.mp4"))
-        .output(os.path.join(config["download__folder_path"],"output.mp4"),
-            map=["0:v","1:a"], vcodec = 'copy', crf = 'copy',
-
-        )
-    )
-    @ffmpeg.on("progress")
-    def on_progress(progress: Progress):
-        print(progress)
-    
-    ffmpeg.execute()
-    os.rename(os.path.join(config["download__folder_path"],"output.mp4"),os.path.join(config["download__folder_path"],yt.title+".mp4"))
-    print('"'+yt.title +'"'+" has been downloaded")
-    
     
 def DownloaderChoice(URL, Mode):
-    if "www.youtube.com" in URL:
+    if ("www.youtube.com" in URL):
         YoutubeDownloader(URL, Mode)
     elif is_supported(URL) == True and config["allowOtherDownloader"] == True:
        OtherDownloader(URL, Mode)
@@ -102,15 +80,38 @@ def DownloaderChoice(URL, Mode):
 def YoutubeDownloader(URL, Mode):    
     yt = pytube.YouTube(URL)
     if Mode == "mp4" or Mode == "MP4" or Mode == "Mp4" or Mode == str(1):
-        yt = pytube.YouTube(URL)
-        stream =yt.streams.get_highest_resolution() #Gives only 1080P on certion videos, needs to be fixed.
-        finished = stream.download(config["download__folder_path"])
-        videoTitle = yt.title
-        print(videoTitle +" has been downloaded")
+        input1 = yt.streams.get_by_itag(ItagChecker(yt,False)).download(output_path=config["download__folder_path"])
+        base, ext = os.path.splitext(input1)
+        os.rename(input1,os.path.join(config["download__folder_path"],"input-a"))
+        input2 = yt.streams.get_by_itag(ItagChecker(yt,True)).download(output_path=config["download__folder_path"], filename="input-b")
+        ffmpeg = (FFmpeg(executable=config["ffmpeg_path"])
+            .option("y")
+            .input(os.path.join(config["download__folder_path"],"input-a"))
+            .input(os.path.join(config["download__folder_path"],"input-b"))
+            .output(os.path.join(config["download__folder_path"],"output.mp4"),
+            map=["0:v","1:a"], vcodec = 'copy', crf = 'copy', acodec = 'copy',
+
+             )
+        )
+
+        @ffmpeg.on("progress")
+        def on_progress(progress: Progress):
+            print(progress)
+    
+        ffmpeg.execute() #The program pauses on this line until the encoding is done
+    
+        os.remove(os.path.join(config["download__folder_path"],"input-a"))
+        os.remove(os.path.join(config["download__folder_path"],"input-b"))
+    
+        try:
+         os.rename(os.path.join(config["download__folder_path"],"output.mp4"),os.path.join(config["download__folder_path"],base+".mp4"))
+         print('"'+yt.title+'"'+ " has been downloaded")
+        except:
+            os.remove(os.path.join(config["download__folder_path"],"output.mp4"))
+            print("Video already exists") 
 
     elif Mode == "mp3" or Mode == "MP3" or Mode == "Mp3" or Mode == str(2): #Downloads only audio as a MP4 file, need conversion to MP3
-        yt = pytube.YouTube(URL)
-        out_file= yt.streams.filter(only_audio=True).first().download(config["download__folder_path"])
+        out_file= yt.streams.filter(only_audio=True).get_by_itag(ItagChecker(yt,True)).download(config["download__folder_path"])
         NewTitle = out_file.replace('.mp4','')
         os.rename((out_file),(NewTitle+'.mp3'))
         print(yt.title +" has been downloaded") #Be aware that newtitle is not orignal path when file is downloaded
