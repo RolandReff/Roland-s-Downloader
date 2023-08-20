@@ -1,7 +1,8 @@
 import os
 import pytube
 import youtube_dl
-import ffmpeg
+from ffmpeg import FFmpeg, Progress
+
 
 # 18/8/2023
 #TLDR, Google enginers are at warfare with the devs, use this ciper for the pytube downnload function to work with 15.0.0
@@ -12,7 +13,6 @@ import ffmpeg
 
 def boot(): 
     #creates the config dictonary that the rest of the program uses and checks if ffpmeg and ffprobe is installed
-    #Sucks that i have to drag the config var around, but it is what it is 
     #This could be done in another way, but i cant be asked 
     
     #print("TLDR, Google enginers are at warfare with the devs, change the pytube cipher to this for the pytube downnload function to work with 15.0.0 \n https://github.com/oncename/pytube/blob/master/pytube/cipher.py")
@@ -64,8 +64,33 @@ def Menu():
         DownloaderChoice(URL, Mode)
 
 def DebugMenu(): #Reserved funtion for later implementation when program is ready for deployment for other users.
+    boot()
+    global config #Is needed for pretty much every function
+    config = boot()
     print("Hei Verden")
+    yt = pytube.YouTube("https://www.youtube.com/watch?v=6YZlFdTIdzM")
+    stream = yt.streams.get_by_itag(ItagChecker(yt,False))
+    stream.download(output_path=config["download__folder_path"], filename="input-a.mp4")
+    stream = yt.streams.get_by_itag(ItagChecker(yt,True))
+    stream.download(output_path=config["download__folder_path"], filename="input-b.mp4")
+    ffmpeg = (FFmpeg(executable=config["ffmpeg_path"])
+        .option("y")
+        .input(os.path.join(config["download__folder_path"],"input-a.mp4"))
+        .input(os.path.join(config["download__folder_path"],"input-b.mp4"))
+        .output(os.path.join(config["download__folder_path"],"output.mp4"),
+            map=["0:v","1:a"], vcodec = 'copy', crf = 'copy',
 
+        )
+    )
+    @ffmpeg.on("progress")
+    def on_progress(progress: Progress):
+        print(progress)
+    
+    ffmpeg.execute()
+    os.rename(os.path.join(config["download__folder_path"],"output.mp4"),os.path.join(config["download__folder_path"],yt.title+".mp4"))
+    print('"'+yt.title +'"'+" has been downloaded")
+    
+    
 def DownloaderChoice(URL, Mode):
     if "www.youtube.com" in URL:
         YoutubeDownloader(URL, Mode)
@@ -76,26 +101,12 @@ def DownloaderChoice(URL, Mode):
 
 def YoutubeDownloader(URL, Mode):    
     yt = pytube.YouTube(URL)
-    
     if Mode == "mp4" or Mode == "MP4" or Mode == "Mp4" or Mode == str(1):
         yt = pytube.YouTube(URL)
-        
-        streamMp4 =yt.streams.get_by_itag(137)
-        streamM4a = yt.streams.get_by_itag(140)
-        #stream =yt.streams.filter(mime_type='video/mp4',res='1080p',progressive=False).last() #Gives only 1080P on certion videos, needs to be fixed.
-        #print(stream)
-        #streamMp4.download(output_path = config["download__folder_path"])
-        #streamM4a.download(output_path = config["directory_path"])
-        #args = ffmpeg.concat(inputVideo, inputAudio, v=1, a=1).output(config["download__folder_path"])
-        #args.execute()
-        #input_video = ffmpeg.input('./video.mp4')
-
-        #input_audio = ffmpeg.input('./audio.mp4')
-
-        #ffmpeg.concat(input_video, input_audio, v=1, a=1).output(config["download__folder_path"]).run()
-        
-                
-        #print( '"'+yt.title +'"'" has been downloaded")
+        stream =yt.streams.get_highest_resolution() #Gives only 1080P on certion videos, needs to be fixed.
+        finished = stream.download(config["download__folder_path"])
+        videoTitle = yt.title
+        print(videoTitle +" has been downloaded")
 
     elif Mode == "mp3" or Mode == "MP3" or Mode == "Mp3" or Mode == str(2): #Downloads only audio as a MP4 file, need conversion to MP3
         yt = pytube.YouTube(URL)
@@ -107,7 +118,19 @@ def YoutubeDownloader(URL, Mode):
         print("There has been a problem")
     
 
-    
+def ItagChecker(yt,audioTrueOrFalse): #Need to swap around the lists so i search the most common itags first so it does not take ages.
+    if audioTrueOrFalse == False:
+        itags = [699,399,335,303,248,299,137,698,398,334,302,247,298,136] #Video itags from youtube.com
+    else:
+        itags = [140,141,139] #Audio itags from yotube.com
+
+    for Fitag in itags:
+        yt.streams.get_by_itag(Fitag)
+        if yt.streams.get_by_itag(Fitag) is not None:
+            itag = Fitag
+            break
+    return itag
+
 
 def OtherDownloader(URL, Mode):
 
@@ -128,4 +151,5 @@ def OtherDownloader(URL, Mode):
 
 if __name__ == "__main__":
     Menu()
+    
     
