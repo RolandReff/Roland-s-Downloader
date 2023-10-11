@@ -24,7 +24,7 @@ Download videos from a [variety of websites](https://github.com/ytdl-org/youtube
 - Add easy-to-use video encoding options with FFMPEG (bulk and single)
 
 
-## Bugs
+## [Bugs](https://github.com/RolandReff/Roland-s-Downloader/issues)
 
 
 
