@@ -1,7 +1,7 @@
 import os
 import pytube
 import youtube_dl
-from ffmpeg import FFmpeg, Progress
+import ffmpeg
 
 from config import config
 
@@ -54,31 +54,27 @@ def YoutubeDownloader(URL, Mode):
         base, ext = os.path.splitext(input1)
         os.rename(input1,os.path.join(mainConfig.downloaldFolderPath,"input-a"))
         input2 = yt.streams.get_by_itag(ItagChecker(yt,True)).download(output_path=mainConfig.downloaldFolderPath, filename="input-b")
-        ffmpeg = (FFmpeg(executable=mainConfig.ffmpegPath)
-            .option("y")
-            .input(os.path.join(mainConfig.downloaldFolderPath,"input-a"))
-            .input(os.path.join(mainConfig.downloaldFolderPath,"input-b"))
-            .output(os.path.join(mainConfig.downloaldFolderPath,"output.mp4"),
-            map=["0:v","1:a"], vcodec = 'copy', crf = 'copy', acodec = 'copy',
+        
 
-             )
-        )
+        #TLDR, Get some sleep and attack this tomorrow <3
 
-        @ffmpeg.on("progress")
-        def on_progress(progress: Progress):
-            print(progress)
+        input_video = ffmpeg.input('./download/input-a')
+
+        input_audio = ffmpeg.input('./download/input-b')
+
+        ffmpeg.concat(input_video, input_audio, v=1, a=1).output('./download/complete.mp4').run()
+        
+
+
+        #os.remove(os.path.join(mainConfig.downloaldFolderPath,"input-a"))
+        #os.remove(os.path.join(mainConfig.downloaldFolderPath,"input-b"))
     
-        ffmpeg.execute() #The program pauses on this line until the encoding is done
-    
-        os.remove(os.path.join(mainConfig.downloaldFolderPath,"input-a"))
-        os.remove(os.path.join(mainConfig.downloaldFolderPath,"input-b"))
-    
-        try:
-         os.rename(os.path.join(config["download__folder_path"],"output.mp4"),os.path.join(mainConfig.downloaldFolderPath,base+".mp4"))
-         print('"'+yt.title+'"'+ " has been downloaded")
-        except:
-            os.remove(os.path.join(config["download__folder_path"],"output.mp4"))
-            print("Video already exists") 
+        #try:
+        #os.rename(os.path.join(mainConfig.downloaldFolderPath,"output.mp4"),os.path.join(mainConfig.downloaldFolderPath,base+".mp4"))
+        print('"'+yt.title+'"'+ " has been downloaded")
+        #except:
+        #    os.remove(os.path.join(mainConfig.downloaldFolderPath,"output.mp4"))
+        #    print("Video already exists") 
 
     elif Mode == "mp3" or Mode == "MP3" or Mode == "Mp3" or Mode == str(2): #Downloads only audio as a MP4 file, need conversion to MP3
         out_file= yt.streams.filter(only_audio=True).get_by_itag(ItagChecker(yt,True)).download(mainConfig.downloaldFolderPath)
