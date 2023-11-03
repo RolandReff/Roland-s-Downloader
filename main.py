@@ -1,7 +1,8 @@
 import os
 import pytube
 import youtube_dl
-from ffmpeg import FFmpeg, Progress
+import ffmpeg
+
 
 from config import config
 
@@ -50,35 +51,25 @@ def DownloaderChoice(URL, Mode):
 def YoutubeDownloader(URL, Mode):    
     yt = pytube.YouTube(URL)
     if Mode == "mp4" or Mode == "MP4" or Mode == "Mp4" or Mode == str(1):
-        input1 = yt.streams.get_by_itag(ItagChecker(yt,False)).download()
-        base, ext = os.path.splitext(input1)
-        os.rename(input1,os.path.join(mainConfig.downloaldFolderPath,"input-a"))
-        input2 = yt.streams.get_by_itag(ItagChecker(yt,True)).download(output_path=mainConfig.downloaldFolderPath, filename="input-b")
-        ffmpeg = (FFmpeg(executable=mainConfig.ffmpegPath)
-            .option("y")
-            .input(os.path.join(mainConfig.downloaldFolderPath,"input-a"))
-            .input(os.path.join(mainConfig.downloaldFolderPath,"input-b"))
-            .output(os.path.join(mainConfig.downloaldFolderPath,"output.mp4"),
-            map=["0:v","1:a"], vcodec = 'copy', crf = 'copy', acodec = 'copy',
+        input1 = yt.streams.get_by_itag(ItagChecker(yt,False)).download(output_path=mainConfig.downloaldFolderPath)
+        base1, ext1 = os.path.splitext(input1)
+        os.rename(input1,os.path.join(mainConfig.downloaldFolderPath,'input-a'+ext1))
+        input2 = yt.streams.get_by_itag(ItagChecker(yt,True)).download(output_path=mainConfig.downloaldFolderPath)
+        base2, ext2 = os.path.splitext(input2)
+        os.rename(input2,os.path.join(mainConfig.downloaldFolderPath,'input-b'+ext2))
 
-             )
-        )
+        input_video = ffmpeg.input(r'./download/input-a'+ext1)
+        input_audio = ffmpeg.input(r'./download/input-b'+ext2)
 
-        @ffmpeg.on("progress")
-        def on_progress(progress: Progress):
-            print(progress)
+        stream = ffmpeg.output(input_video, input_audio, './download/output.mp4',vcodec = 'copy', crf = 'copy', acodec = 'copy')
+        ffmpeg.run(stream)
+
+        os.rename(os.path.join(mainConfig.downloaldFolderPath,"output.mp4"),os.path.join(mainConfig.downloaldFolderPath,base1+".mp4"))
+
+        os.remove(os.path.join(mainConfig.downloaldFolderPath,"input-a"+ext1))
+        os.remove(os.path.join(mainConfig.downloaldFolderPath,"input-b"+ext2))
     
-        ffmpeg.execute() #The program pauses on this line until the encoding is done
-    
-        os.remove(os.path.join(mainConfig.downloaldFolderPath,"input-a"))
-        os.remove(os.path.join(mainConfig.downloaldFolderPath,"input-b"))
-    
-        try:
-         os.rename(os.path.join(config["download__folder_path"],"output.mp4"),os.path.join(mainConfig.downloaldFolderPath,base+".mp4"))
-         print('"'+yt.title+'"'+ " has been downloaded")
-        except:
-            os.remove(os.path.join(config["download__folder_path"],"output.mp4"))
-            print("Video already exists") 
+        print('"'+yt.title+'"'+ " has been downloaded")
 
     elif Mode == "mp3" or Mode == "MP3" or Mode == "Mp3" or Mode == str(2): #Downloads only audio as a MP4 file, need conversion to MP3
         out_file= yt.streams.filter(only_audio=True).get_by_itag(ItagChecker(yt,True)).download(mainConfig.downloaldFolderPath)
