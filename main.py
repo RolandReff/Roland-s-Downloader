@@ -72,10 +72,15 @@ def YoutubeDownloader(URL, Mode):
         print('"'+yt.title+'"'+ " has been downloaded")
 
     elif Mode == "mp3" or Mode == "MP3" or Mode == "Mp3" or Mode == str(2): #Downloads only audio as a MP4 file, need conversion to MP3
-        out_file= yt.streams.filter(only_audio=True).get_by_itag(ItagChecker(yt,True)).download(mainConfig.downloaldFolderPath)
-        NewTitle = out_file.replace('.mp4','')
-        os.rename((out_file),(NewTitle+'.mp3'))
-        print(yt.title +" has been downloaded") #Be aware that newtitle is not orignal path when file is downloaded
+        input = yt.streams.get_by_itag(ItagChecker(yt,True)).download(output_path=mainConfig.downloaldFolderPath)
+        base, ext = os.path.splitext(input)
+        os.rename(input,os.path.join(mainConfig.downloaldFolderPath,'input'+ext))
+        input_audio = ffmpeg.input(r'./download/input'+ext)
+        stream = ffmpeg.output(input_audio, './download/output.mp3',crf = 'copy', acodec = 'libmp3lame', format = 'mp3')
+        ffmpeg.run(stream)
+        os.rename(os.path.join(mainConfig.downloaldFolderPath,"output.mp3"),os.path.join(mainConfig.downloaldFolderPath,base+".mp3"))
+        os.remove(os.path.join(mainConfig.downloaldFolderPath,"input"+ext))
+        print(yt.title +" has been downloaded") 
     else:
         print("There has been a problem")
     
