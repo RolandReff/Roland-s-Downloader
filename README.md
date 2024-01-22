@@ -1,10 +1,10 @@
 # Roland's Downloader
 This is a personal project made and designed to simplify the process of downloading vidoes 
-from various websites usin pytube and youtube-dl. 
+from various websites using pytube and youtube-dl. 
 
 
 ## Functions
-Download youtube videos in the following formats with Pytube:
+Download Youtube videos in the following formats with Pytube and ffmpeg:
 - MP4
 - Mp3
 
@@ -14,15 +14,7 @@ Download videos from a [variety of websites](https://github.com/ytdl-org/youtube
 
 ## Requirements
 - [The listed python libraries](https://github.com/RolandReff/Roland-s-Downloader/blob/main/requirements.txt)
-- FFMPEG and FFPROBE
-
-
-## To-DO!
-- Add WAV (audio only) and WAV (Video and Audio) Formats
-- Add M4A format download option
-- Add Playlist download option
-- Add easy-to-use video encoding options with FFMPEG (bulk and single)
-
+- FFMPEG and FFPROBE installed in PATH
 
 ## [Bugs](https://github.com/RolandReff/Roland-s-Downloader/issues)
 

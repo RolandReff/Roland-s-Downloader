@@ -3,14 +3,7 @@ import pytube
 import youtube_dl
 import ffmpeg
 
-# 18/8/2023
-#TLDR, Google enginers are at warfare with the devs, use this ciper for the pytube downnload function to work with 15.0.0
-# https://github.com/oncename/pytube/blob/master/pytube/cipher.py
-
-#Add playlist download compatebility
-#Add WAV, M4A true format downloads
-
-def is_supported(URL): #https://stackoverflow.com/a/61489622
+def is_supported(URL): #https://stackoverflow.com/a/61489622 <3
     try:
         extractors = youtube_dl.extractor.gen_extractors()
         for e in extractors:
@@ -19,9 +12,6 @@ def is_supported(URL): #https://stackoverflow.com/a/61489622
         return False
     except:
         return False
-
-def TestMenu(): #Reserved funtion for testing
-    print("Hei Verden")
     
 def DownloaderChoice(URL, Mode):
     if ("www.youtube.com" in URL):
@@ -29,22 +19,22 @@ def DownloaderChoice(URL, Mode):
     elif is_supported(URL) == True:
        OtherDownloader(URL, Mode)
     else:   
-        print("The URL is not valid")
+        print("The URL is not valid or not supported.")
 
 def YoutubeDownloader(URL, Mode):    
     yt = pytube.YouTube(URL)
     if Mode == "mp4" or Mode == "MP4" or Mode == "Mp4" or Mode == str(1):
-        input1 = yt.streams.get_by_itag(ItagChecker(yt,False)).download(output_path=".\download")
+        input1 = yt.streams.get_by_itag(ItagChecker(yt,"video")).download(output_path=".\download")
         base1, ext1 = os.path.splitext(input1)
         os.rename(input1,os.path.join(".\download",'input-a'+ext1))
-        input2 = yt.streams.get_by_itag(ItagChecker(yt,True)).download(output_path=".\download")
+        input2 = yt.streams.get_by_itag(ItagChecker(yt,"audio")).download(output_path=".\download")
         base2, ext2 = os.path.splitext(input2)
         os.rename(input2,os.path.join(".\download",'input-b'+ext2))
 
         input_video = ffmpeg.input(r'./download/input-a'+ext1)
         input_audio = ffmpeg.input(r'./download/input-b'+ext2)
 
-        stream = ffmpeg.output(input_video, input_audio, './download/output.mp4',vcodec = 'copy', crf = 'copy', acodec = 'copy')
+        stream = ffmpeg.output(input_video, input_audio,'./download/output.mp4',vcodec = 'copy', crf = 'copy', acodec = 'copy')
         ffmpeg.run(stream)
 
         os.rename(os.path.join(".\download","output.mp4"),os.path.join(".\download",base1+".mp4"))
@@ -54,22 +44,26 @@ def YoutubeDownloader(URL, Mode):
     
         print('"'+yt.title+'"'+ " has been downloaded")
 
-    elif Mode == "mp3" or Mode == "MP3" or Mode == "Mp3" or Mode == str(2): #Downloads only audio as a MP4 file, need conversion to MP3
-        input = yt.streams.get_by_itag(ItagChecker(yt,True)).download(output_path=".\download")
+    elif Mode == "mp3" or Mode == "MP3" or Mode == "Mp3" or Mode == str(2):
+        input = yt.streams.get_by_itag(ItagChecker(yt,"audio")).download(output_path=".\download")
         base, ext = os.path.splitext(input)
+        
         os.rename(input,os.path.join(".\download",'input'+ext))
         input_audio = ffmpeg.input(r'./download/input'+ext)
+        
         stream = ffmpeg.output(input_audio, './download/output.mp3',crf = 'copy', acodec = 'libmp3lame', format = 'mp3')
         ffmpeg.run(stream)
+       
         os.rename(os.path.join(".\download","output.mp3"),os.path.join(".\download",base+".mp3"))
         os.remove(os.path.join(".\download","input"+ext))
+        
         print(yt.title +" has been downloaded") 
     else:
         print("There has been a problem")
     
 
-def ItagChecker(yt,audioTrueOrFalse): #Need to swap around the lists so i search the most common itags first so it does not take ages.
-    if audioTrueOrFalse == False:
+def ItagChecker(yt,audioOrVideo): #TO-DO: Make it so older videos where audio and video is in a single file can be downloaded without bricking the script. 
+    if audioOrVideo == "video":
         print("Finding optimal video files...")
         itags = [699,399,335,303,248,299,137,698,398,334,302,247,298,136] #Video itags from youtube.com
     else:
@@ -109,8 +103,13 @@ if __name__ == "__main__":
     while APPSTATE == True: 
         print('URL example: https://www.youtube.com/watch?v=dQw4w9WgXcQ')
         URL = input("Enter URL: ")
+        if URL == "exit":
+            APPSTATE = False
+            break
         print('Options:\n1-MP4\n2-MP3') #\n3-WAV not added yet to both downloaders
         Mode = input("Enter format:")
+        
+
         DownloaderChoice(URL, Mode)
     
     
