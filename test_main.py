@@ -4,8 +4,6 @@ import main
 import os
 
 class test_main(unittest.TestCase):
-    def test_yt_dl_installed(self):
-        self.assertNotEqual(subprocess.check_output("where youtube-dl"),"INFO: Could not find files for the given pattern(s).")
 
     def test_ffprobe_installed(self):
         self.assertNotEqual(subprocess.check_output("where ffprobe"),"INFO: Could not find files for the given pattern(s).")
