@@ -1,29 +1,28 @@
 
 import os
 import re #Add regex later in Pytubedownloader
-import pytube
-from yt_dlp import YoutubeDL
+import pytubefix 
+import yt_dlp 
 import ffmpeg
 
-def is_supported(URL): #https://stackoverflow.com/a/61489622 <3
-    try:
-        
-        return True
-    except:
-        return False
+def is_supported(url):
+    extractors = yt_dlp.extractor.gen_extractors()
+    for e in extractors:
+        if e.suitable(url) and e.IE_NAME != 'generic':
+            return True
+    return False
     
 def DownloaderChoice(URL, Mode):
     if ("www.youtube.com" in URL):
         PytubeDowloader(URL, Mode)
+        #ytdlpDownloader(URL, Mode)
     elif (is_supported(URL)):
-        print("hello world")
-    else: #  is_supported(URL) == True:
-       ytdlpDownloader(URL, Mode)
-    #else:   
-    #    print("The URL is not valid or not supported.")
+        ytdlpDownloader(URL, Mode)
+    else:   
+       print("The URL is not valid or not supported.")
 
 def PytubeDowloader(URL, Mode):    
-    yt = pytube.YouTube(URL)
+    yt = pytubefix.YouTube(URL)
     if Mode == "mp4" or Mode == "MP4" or Mode == "Mp4" or Mode == str(1):
         input1 = yt.streams.get_by_itag(ItagChecker(yt,"video")).download(output_path=".\download")
         FileName, ext1 = os.path.splitext(input1)
@@ -91,7 +90,7 @@ def ytdlpDownloader(URL, Mode):
         print("There has been a problem")
         return
 
-    with YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         download = ydl.extract_info(URL,download=True)
         print(str('"'+download.get('title', None)) + '" has been downloaded')
 
@@ -105,11 +104,10 @@ if __name__ == "__main__":
         print('URL example: https://www.youtube.com/watch?v=dQw4w9WgXcQ')
         URL = input("Enter URL: ")
         if URL == "exit":
-            APPSTATE = False
+            break
         print('Options:\n1-MP4\n2-MP3') #\n3-WAV not added yet to both downloaders
         Mode = input("Enter format:")
         
-
         DownloaderChoice(URL, Mode)
     
     
