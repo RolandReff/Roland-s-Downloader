@@ -4,6 +4,14 @@ import re #Add regex later in Pytubedownloader
 import pytubefix 
 import yt_dlp 
 import ffmpeg
+import sys
+
+from PyQt6.QtCore import*
+from PyQt6.QtWidgets import*
+from PyQt6.QtGui import*
+
+
+
 
 def is_supported(url):
     extractors = yt_dlp.extractor.gen_extractors()
@@ -94,7 +102,55 @@ def ytdlpDownloader(URL, Mode):
         download = ydl.extract_info(URL,download=True)
         print(str('"'+download.get('title', None)) + '" has been downloaded')
 
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        
+        self.setWindowTitle("Roland's Downloader")
+        self.GridLayout = QGridLayout()
+        
+        self.UrlInputField = QLineEdit()
+        self.GridLayout.addWidget(self.UrlInputField,0,0,1,4)
+        
+        StartButton = QPushButton("Go")
+        StartButton.clicked.connect(self.download)
+        self.GridLayout.addWidget(StartButton,0,5)
+        
+        FileTypeDropDown = QComboBox()
+        FileTypeDropDown.addItem("Mp4")
+        FileTypeDropDown.addItem("Mp3")
+        self.GridLayout.addWidget(FileTypeDropDown,1,0)
+        print(FileTypeDropDown.windowIconText())
+        QualityDropDown = QComboBox()
+        QualityDropDown.addItem("Best")
+        QualityDropDown.addItem("Lowest")
+        self.GridLayout.addWidget(QualityDropDown,1,1)     
+
+        #self.GridLayout.setColumnStretch(0, 15)
+        
+
+        widget = QWidget()
+        widget.setLayout(self.GridLayout)
+        self.setCentralWidget(widget)
+
+    def printInputField(self):
+        print(self.UrlInputField.text())
+
+    def download(self):
+        ytdlpDownloader(self.UrlInputField.text(),"Mp4")
+
 if __name__ == "__main__":
+    
+    app = QApplication(sys.argv)
+
+    window = MainWindow()
+    window.show()
+
+    app.exec()
+    
+    
+    
     if not os.path.isdir("download"): # Makes a download path if there isn't one
             os.makedirs("download")
             print("download folder created!")
