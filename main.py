@@ -117,15 +117,18 @@ class MainWindow(QMainWindow):
         StartButton.clicked.connect(self.download)
         self.GridLayout.addWidget(StartButton,0,5)
         
-        FileTypeDropDown = QComboBox()
-        FileTypeDropDown.addItem("Mp4")
-        FileTypeDropDown.addItem("Mp3")
-        self.GridLayout.addWidget(FileTypeDropDown,1,0)
-        print(FileTypeDropDown.windowIconText())
-        QualityDropDown = QComboBox()
-        QualityDropDown.addItem("Best")
-        QualityDropDown.addItem("Lowest")
-        self.GridLayout.addWidget(QualityDropDown,1,1)     
+        self.FileTypeDropDown = QComboBox(self)
+    
+        self.FileTypeDropDown.addItem("Mp4")
+        self.FileTypeDropDown.addItem("Mp3")
+
+        
+           
+        self.GridLayout.addWidget(self.FileTypeDropDown,1,0)
+        self.QualityDropDown = QComboBox(self)
+        self.QualityDropDown.addItem("Best")
+        self.QualityDropDown.addItem("Lowest")
+        self.GridLayout.addWidget(self.QualityDropDown,1,1)     
 
         #self.GridLayout.setColumnStretch(0, 15)
         
@@ -138,32 +141,20 @@ class MainWindow(QMainWindow):
         print(self.UrlInputField.text())
 
     def download(self):
-        ytdlpDownloader(self.UrlInputField.text(),"Mp4")
+        print(self.FileTypeDropDown.currentText())
+        DownloaderChoice(self.UrlInputField.text(),self.FileTypeDropDown.currentText())
+        
+
+
 
 if __name__ == "__main__":
-    
-    app = QApplication(sys.argv)
-
-    window = MainWindow()
-    window.show()
-
-    app.exec()
-    
-    
-    
     if not os.path.isdir("download"): # Makes a download path if there isn't one
             os.makedirs("download")
-            print("download folder created!")
+            
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    app.exec()
     
-    APPSTATE = True
-    while APPSTATE == True: 
-        print('URL example: https://www.youtube.com/watch?v=dQw4w9WgXcQ')
-        URL = input("Enter URL: ")
-        if URL == "exit":
-            break
-        print('Options:\n1-MP4\n2-MP3') #\n3-WAV not added yet to both downloaders
-        Mode = input("Enter format:")
-        
-        DownloaderChoice(URL, Mode)
     
     
